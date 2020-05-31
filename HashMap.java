@@ -1,20 +1,35 @@
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class HashMap<K, V> implements Map<K, V> {
 
 	private Node<K, V>[] array;
 	private int size;
-	private static final initCapacity = 16;
+	private int capacity;
+	private static final int initCapacity = 16;
+
+	
+	public HashMap() {
+		this(initCapacity);
+	}
 
 	@SuppressWarnings("unchecked")
-	public HashMap() {
-		array = (Node<K, V>[]) new Node[initCapacity];
+	public HashMap(int capacity) {
+		if(capacity < 1) {
+			throw new IllegalArgumentException();
+		}
+
+		array = (Node<K, V>[]) new Node[capacity];
+		this.capacity = capacity;
 		size = 0;
+	}
+
+	public HashMap(Map<? extends K, ? extends V> m) {
+		putAll(m);
 	}
 
 	public void put(K key, V value) {
 		int hash = key.hashCode();
-		int index = hash % 16;
+		int index = hash % capacity;
 
 		if(array[index] == null) {
 			array[index] = new Node<K, V>(hash, key, value);
@@ -47,7 +62,7 @@ public class HashMap<K, V> implements Map<K, V> {
 
 	public V remove(K key) {
 		int hash = key.hashCode();
-		int index = hash % 16;
+		int index = hash % capacity;
 
 		if(array[index] == null) {
 			throw new NoSuchElementException();
@@ -78,11 +93,21 @@ public class HashMap<K, V> implements Map<K, V> {
 		throw new NoSuchElementException();	
 	}
 
+	public boolean remove(K key, V value) {
+		//To-do
+		return false;
+	}
+
+	public void putAll(Map<? extends K, ? extends V> m) {
+		 //To-do
+	}
+
+
 	public int size() {
 		return size;
 	}
 
-	public void isEmpty() {
+	public boolean isEmpty() {
 		return size == 0;
 	}
 
@@ -93,7 +118,41 @@ public class HashMap<K, V> implements Map<K, V> {
 	}
 
 	public Set<K> keySet() {
+		Set<K> keys = new HashSet<>();
 
+		for(int i = 0; i < capacity; i++) {
+			if(array[i] != null) {
+				Node<K, V> node = array[i];
+				while(node != null) {
+					keys.add(node.getKey());
+					node = node.getNext();
+				}
+			}
+		}
+
+		return keys;
+	}
+
+	public Collection<V> values() {
+		Collection<V> values = new ArrayList<>();
+
+		for(K key : keySet()) {
+			Node<K, V> node = getNode(key);
+			values.add(node.getValue());
+		}
+
+		return values;
+	}
+
+	public Set<Map.Entry<K, V>> entrySet() {
+		Set<Map.Entry<K, V>> entrySet = new HashSet<>();
+
+		for(K key : keySet()) {
+			Map.Entry<K, V> entry = getNode(key);
+			entrySet.add(entry);
+		}
+
+		return entrySet;
 	}
 
 	public V replace(K key, V value) {
@@ -114,9 +173,27 @@ public class HashMap<K, V> implements Map<K, V> {
 		}
 	}
 
+	public boolean containsKey(K key) {
+		for(K k : keySet()) {
+			if(k.equals(key)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean containsValue(V value) {
+		for(V v : values()) {
+			if(v.equals(value)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private Node<K, V> getNode(K key) {
 		int hash = key.hashCode();
-		int index = hash % 16;
+		int index = hash % capacity;
 
 		if(array[index] == null) {
 			throw new NoSuchElementException();
